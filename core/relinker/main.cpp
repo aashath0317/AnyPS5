@@ -40,17 +40,14 @@ int main(const int argc, char* argv[]) {
         const std::string absPath = std::filesystem::absolute(args.outputPath).string();
 
         if (args.toIntel) {
-            std::cout << "Mode: Intel instruction conversion; system unchanged; unused-filter=" << args.unusedFilterLevel << " (not applied)\n";
+            std::cout << "Mode: Intel instruction conversion\n";
 
             const Relinker::ElfReader elfReader(sourceBytes);
             const auto converter = Codegen::MakeAmd64OnlyConverter();
             auto result = converter->Convert(std::move(sourceBytes), elfReader.ReadCodeSegments());
-
-            fileWriter.Write(absPath, std::move(result.Bytes));
+            
+            sourceBytes = std::move(result.Bytes);
             std::cout << "OK: " << result.ReplacedCount << " instructions replaced\n";
-
-            if (args.autorun) return Cli::Autorun(absPath, args.toWindows);
-            return 0;
         }
 
         auto elfReader = std::make_shared<Relinker::ElfReader>(sourceBytes);
